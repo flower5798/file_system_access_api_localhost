@@ -1,6 +1,6 @@
 # File System Access APIでディレクトリ内のファイル読み込み＆書き換え
 
-実際にFile System Access APIを使っている処理は * views/templates * を参照。
+実際にFile System Access APIを使っている処理は views/templates を参照。
 
 ## 記載している処理
 指定したフォルダ中の temp.json という名前のファイルの内容を書き換え。
