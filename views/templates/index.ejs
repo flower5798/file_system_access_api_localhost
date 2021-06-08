@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <h1>File System Access API Sample</h1>
+
+  <button onclick="getTheFile()">exec read</button>
+
+  <button onclick="execSaveFile()">exec save</button>
+
+  <button onclick="execDirControl()">exec dir control</button>
+
+  <script>
+
+let readFileHandleGlobal, writeFileHandleGlobal, currentDirHandle
+
+    const options = {
+      types: [
+        {
+          description: "Text Files or JSON",
+          accept: {
+            "text/plain": [".txt", ".json"],
+          },
+        },
+      ],
+    };
+
+    async function getTheFile() {
+      try {
+        if(!readFileHandleGlobal){
+          const [fileHandle] = await window.showOpenFilePicker(options);
+          readFileHandleGlobal = fileHandle
+        }
+        const text = await readFile(readFileHandleGlobal)
+        console.log(text);
+      } catch(e) {
+        console.log(e)
+      }
+    }
+
+    async function readFile(fileHandle) {
+      const file = await fileHandle.getFile();
+      const text = await file.text();
+      return text
+    }
+
+    async function saveFile(fileHandle, contents) {
+      const writable = await fileHandle.createWritable();
+      await writable.write(contents);
+      await writable.close();
+      console.log("finished.")
+    }
+
+    async function execSaveFile() {
+      try {
+        if(!writeFileHandleGlobal){
+          writeFileHandleGlobal = await window.showSaveFilePicker();
+        }
+        await saveFile(writeFileHandleGlobal, JSON.stringify({name: "tdn" + Date.now()}));
+      } catch(e) {
+        console.log(e)
+      }
+    }
+
+    async function execDirControl(){
+      const targetFileName = "temp.json"
+      try {
+        if(!currentDirHandle){
+          // select 
+          // if canceled, DOMException thrown
+          currentDirHandle = await window.showDirectoryPicker();
+        }
+
+        // get dir items
+        // they contain kind and name, so they can diplayed like Explore
+        const entries = currentDirHandle.values()
+
+        const filesAndDirs = [];
+        for await (const entry of entries) {
+          filesAndDirs.push(entry)
+        }
+        const targetFileHandle = filesAndDirs.filter(item => item.name === targetFileName)[0]
+
+        // get before text
+        const oldText = await readFile(targetFileHandle)
+        console.log(oldText)
+
+        // write file
+        const saveText = JSON.stringify({name: "tdn" + Date.now()})
+        await saveFile(targetFileHandle, saveText)
+
+        // read file
+        const newText = await readFile(targetFileHandle)
+        console.log(newText)
+
+        // checking and write file
+        // for (const entry of await currentDirHandle.values()) {
+        //   // console.log(entry);
+        //   if(entry.name === "temp.json"){
+        //     const targetFileHandle = entry
+        //     // const file = targetFileHandle.getFile()
+        //     await saveFile(targetFileHandle, JSON.stringify({name: "tdn" + Date.now()}))
+
+        //     const newText = await readFile(targetFileHandle)
+        //     console.log(newText)
+        //   }
+        // }
+      } catch(e) {
+        console.log(e)
+        console.trace()
+      }
+    }
+
+
+  </script>
+</body>
+</html>
